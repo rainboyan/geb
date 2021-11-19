@@ -60,7 +60,7 @@ class ParallelExecutionSpec extends Specification {
 
     def 'GebSpec supports parallel execution at feature level'() {
         when:
-        def result = specRunner.run """
+        def result = specRunner.runWithImports """
             class SpecRunningFixturesInParallel extends GebSpec {
 
                 def setup() {
@@ -88,7 +88,7 @@ class ParallelExecutionSpec extends Specification {
 
     def 'GebReportingSpec supports parallel execution at feature level'() {
         when:
-        def result = specRunner.run """
+        def result = specRunner.runWithImports """
             abstract class AbstractSpecRunningFixturesInParallel extends GebReportingSpec {
                 def setup() {
                     baseUrl = "${server.baseUrl}"
@@ -124,7 +124,7 @@ class ParallelExecutionSpec extends Specification {
     }
 
     private Set<String> reportFileTestCounterPrefixes(String className) {
-        def reportGroupDir = new File(reportDir, className)
+        def reportGroupDir = new File(reportDir, "apackage/${className}")
         reportGroupDir.listFiles().collect {
             it.name.tokenize("-").first()
         }
