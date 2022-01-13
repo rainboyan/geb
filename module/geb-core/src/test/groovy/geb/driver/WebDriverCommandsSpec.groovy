@@ -17,24 +17,25 @@ package geb.driver
 
 import geb.Module
 import geb.Page
-import geb.test.CallbackAndWebDriverServer
-import geb.test.GebSpecWithServer
+import geb.test.GebSpecWithCallbackServer
 import geb.test.RemoteWebDriverWithExpectations
-import geb.test.TestHttpServer
+import geb.test.StandaloneWebDriverServer
 import org.openqa.selenium.remote.DesiredCapabilities
+import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Unroll
 
-class WebDriverCommandsSpec extends GebSpecWithServer {
+class WebDriverCommandsSpec extends GebSpecWithCallbackServer {
 
     @Shared
-    CallbackAndWebDriverServer callbackAndWebDriverServer = new CallbackAndWebDriverServer(browser.config)
+    @AutoCleanup
+    StandaloneWebDriverServer webDriverServer = new StandaloneWebDriverServer()
+
     RemoteWebDriverWithExpectations driver
 
     def setup() {
-        driver = new RemoteWebDriverWithExpectations(callbackAndWebDriverServer.webdriverUrl, DesiredCapabilities.htmlUnit())
+        driver = new RemoteWebDriverWithExpectations(webDriverServer.url, DesiredCapabilities.htmlUnit())
         browser.driver = driver
-        browser.baseUrl = callbackAndWebDriverServer.applicationUrl
         browser.config.cacheDriver = false
     }
 
@@ -42,13 +43,8 @@ class WebDriverCommandsSpec extends GebSpecWithServer {
         driver.checkAndResetExpectations()
     }
 
-    @Override
-    TestHttpServer getServerInstance() {
-        callbackAndWebDriverServer
-    }
-
     void html(Closure htmlMarkup) {
-        callbackAndWebDriverServer.responseHtml(htmlMarkup)
+        responseHtml(htmlMarkup)
         go()
         driver.clearRecordedCommands()
     }

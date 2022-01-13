@@ -18,8 +18,10 @@ package geb.test
 import geb.Browser
 import geb.Configuration
 import geb.ConfigurationLoader
+import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.DesiredCapabilities
 import spock.lang.AutoCleanup
+import spock.lang.Shared
 import spock.lang.Specification
 
 import static geb.test.RemoteWebDriverWithExpectations.DEFAULT_IGNORED_COMMANDS
@@ -28,8 +30,9 @@ class GebTestManagerSpec extends Specification {
 
     Configuration configuration = new ConfigurationLoader().conf
 
-    @AutoCleanup("stop")
-    CallbackAndWebDriverServer callbackAndWebDriverServer = new CallbackAndWebDriverServer(configuration)
+    @Shared
+    @AutoCleanup
+    StandaloneWebDriverServer webDriverServer = new StandaloneWebDriverServer()
 
     RemoteWebDriverWithExpectations driver
 
@@ -37,10 +40,8 @@ class GebTestManagerSpec extends Specification {
     GebTestManager gebTestManager
 
     def setup() {
-        callbackAndWebDriverServer.start()
-
         driver = new RemoteWebDriverWithExpectations(
-            callbackAndWebDriverServer.webdriverUrl, DesiredCapabilities.htmlUnit(), DEFAULT_IGNORED_COMMANDS - 'quit'
+            webDriverServer.url, new ChromeOptions(), DEFAULT_IGNORED_COMMANDS - 'quit'
         )
         configuration.driver = driver
         gebTestManager = new GebTestManagerBuilder()

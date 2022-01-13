@@ -15,31 +15,26 @@
  */
 package geb.driver
 
-import geb.test.CallbackAndWebDriverServer
-import geb.test.GebSpecWithServer
-import geb.test.TestHttpServer
+import geb.test.GebSpecWithCallbackServer
+import geb.test.StandaloneWebDriverServer
 import groovy.transform.InheritConstructors
 import org.openqa.selenium.Capabilities
-import org.openqa.selenium.remote.DesiredCapabilities
+import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.remote.Response
+import spock.lang.AutoCleanup
 import spock.lang.Issue
 import spock.lang.Shared
 
 import static org.openqa.selenium.remote.DriverCommand.GET_CURRENT_URL
 
-class DriverWithInvalidGetCurrentUrlImplementationSpec extends GebSpecWithServer {
+class DriverWithInvalidGetCurrentUrlImplementationSpec extends GebSpecWithCallbackServer {
 
     @Shared
-    CallbackAndWebDriverServer callbackAndWebDriverServer = new CallbackAndWebDriverServer(browser.config)
-
-    @Override
-    TestHttpServer getServerInstance() {
-        callbackAndWebDriverServer
-    }
+    @AutoCleanup
+    StandaloneWebDriverServer webDriverServer = new StandaloneWebDriverServer()
 
     def setup() {
-        browser.baseUrl = callbackAndWebDriverServer.applicationUrl
         browser.config.cacheDriver = false
     }
 
@@ -68,7 +63,9 @@ class DriverWithInvalidGetCurrentUrlImplementationSpec extends GebSpecWithServer
     }
 
     void setCurrentUrlResponseValue(String value) {
-        browser.driver = new DriverWithInvalidGetCurrentUrlImplementation(callbackAndWebDriverServer.webdriverUrl, DesiredCapabilities.htmlUnit(), value)
+        browser.driver = new DriverWithInvalidGetCurrentUrlImplementation(
+            webDriverServer.url, new ChromeOptions(), value
+        )
     }
 }
 

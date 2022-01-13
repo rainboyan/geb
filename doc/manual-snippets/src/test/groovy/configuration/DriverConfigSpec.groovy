@@ -16,7 +16,7 @@
 package configuration
 
 import geb.driver.CachingDriverFactory
-import geb.test.WebDriverServer
+import geb.test.StandaloneWebDriverServer
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.htmlunit.HtmlUnitDriver
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -79,15 +79,15 @@ class DriverConfigSpec extends Specification implements InlineConfigurationLoade
     @Unroll("driver should be #driverClass.simpleName when environment is #env")
     def "environment sensitive driver config"() {
         given:
-        def webDriverServer = new WebDriverServer()
-        webDriverServer.start()
+        def webDriverServer = new StandaloneWebDriverServer()
 
         when:
         configScript(env, """
             // tag::env_sensitive_driver_config[]
             import org.openqa.selenium.htmlunit.HtmlUnitDriver
 
-            import org.openqa.selenium.remote.DesiredCapabilities
+            import org.openqa.selenium.chrome.ChromeOptions
+
             import org.openqa.selenium.remote.RemoteWebDriver
 
             // default is to use htmlunit
@@ -99,9 +99,9 @@ class DriverConfigSpec extends Specification implements InlineConfigurationLoade
                     driver = {
                         def remoteWebDriverServerUrl = new URL("http://example.com/webdriverserver")
                         // end::env_sensitive_driver_config[]
-                        remoteWebDriverServerUrl = new URL("${webDriverServer.getBaseUrl()}")
+                        remoteWebDriverServerUrl = new URL("${webDriverServer.url}")
                         // tag::env_sensitive_driver_config[]
-                        new RemoteWebDriver(remoteWebDriverServerUrl, DesiredCapabilities.firefox())
+                        new RemoteWebDriver(remoteWebDriverServerUrl, new ChromeOptions())
                     }
                 }
             }
@@ -114,7 +114,7 @@ class DriverConfigSpec extends Specification implements InlineConfigurationLoade
 
         cleanup:
         CachingDriverFactory.clearCacheAndQuitDriver()
-        webDriverServer.stop()
+        webDriverServer.close()
 
         where:
         env      | driverClass
